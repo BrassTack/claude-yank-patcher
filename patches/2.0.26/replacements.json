@@ -12,7 +12,7 @@
   {
     "label": "Ctrl+K kill ring with append",
     "search": "[ \"k\", () => O.deleteToLineEnd() ]",
-    "replace": "[ \"k\", () => {\n        let K1 = O.text, j1 = O.offset, W1 = O.deleteToLineEnd();\n        recordKill(K1.slice(j1), W1.offset);\n        return W1;\n    } ]"
+    "replace": "[ \"k\", () => {\n        let K1 = O.text, j1 = O.offset, W1 = O.deleteToLineEnd();\n        let deletedText;\n        if (K1[j1] === '\\n') {\n            deletedText = '\\n';\n        } else {\n            let endPos = K1.indexOf('\\n', j1);\n            deletedText = endPos === -1 ? K1.slice(j1) : K1.slice(j1, endPos);\n        }\n        recordKill(deletedText, W1.offset);\n        return W1;\n    } ]"
   },
   {
     "label": "Ctrl+T transpose",

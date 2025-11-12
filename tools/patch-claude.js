@@ -194,6 +194,11 @@ function main() {
   step('✅', `Sandbox ready: ${sandboxDir}`);
   console.log(`Next: ./claude ${installedVersion}`);
   console.log(`Alt : cd ${sandboxDir} && npx claude-code`);
+  console.log('');
+  console.log('🧪 Remember to test multi-line cut/yank operations:');
+  console.log('   • Move up a line, Ctrl+K to kill 2 lines, then Ctrl+Y to yank back');
+  console.log('   • Test that multi-line content pastes exactly as cut');
+  console.log('   • See GitHub issue #5 for details');
 }
 
 try {

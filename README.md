@@ -10,12 +10,12 @@ The official CLI cuts text but forgets it immediately, making `Ctrl+Y` (yank/pas
 
 ### Updating to new releases
 
-1. Ask Claude Code, Codex, or whichever assistant you use to 
+1. Ask Claude Code, Codex, or whichever assistant you use to
   ```
   run ./patch-claude latest and build an updated patch
   ```
   That single request installs the newest CLI, formats the bundle, and tries the nearest recorded replacement sets.  The LLM will see it fail, and then build an new patch.
-2. If the patch lands, sanity-check the sandbox with `./claude <version>` and commit the new `patches/<version>/` artefacts so the release stays reproducible.
+2. If the patch lands, sanity-check the sandbox with `./claude <version>` **and test multi-line cut/yank operations** (see testing checklist below), then commit the new `patches/<version>/` artefacts so the release stays reproducible.
 
 
 
@@ -85,11 +85,33 @@ The wrapper automatically uses your latest installed sandbox, or you can pin it 
 - **Transpose**: `^T` swaps characters (special end-of-line behavior)
 - **Word boundaries**: `^W` uses whitespace boundaries, `Meta+D` preserves trailing space
 
+## Testing checklist
+
+Always test the following scenarios after applying a patch:
+
+### Single-line operations
+- `Ctrl+K` (kill to end of line) followed by `Ctrl+Y` (yank)
+- `Ctrl+U` (kill to start of line) followed by `Ctrl+Y`
+- `Ctrl+W` (kill word backwards) followed by `Ctrl+Y`
+- `Meta+D` (kill word forwards) followed by `Ctrl+Y`
+- `Ctrl+T` (transpose characters)
+
+### **Multi-line operations (critical)**
+- **Example test**: With text `1\n2\n3\n4`, move cursor to line 2 and press `Ctrl+K` to kill line 2, then `Ctrl+Y` to yank it back. Should get exactly `2` (not `3\n4`)
+- **End-of-line test**: Cut from end-of-line and verify `Ctrl+Y` pastes the exact content that was cut, including newline handling
+- Cut multiple consecutive lines and verify `Ctrl+Y` pastes them back in the correct order
+- Test that multi-line kills properly populate the kill ring without corruption
+
+### Consecutive operations
+- Multiple `Ctrl+W` operations should accumulate in kill ring
+- Multiple `Ctrl+K` operations should append (not replace) in kill ring
+
 ## Maintenance checklist
 
 - Keep `patch-claude` and `apply_killring_patch.js` in sync with the latest prompt structure.
 - Commit the generated `patches/<version>/` folder whenever a new release is verified.
 - Use `./claude <version>` to sanity-check features before archiving the patch.
+- **Always test multi-line cut/yank operations** - this is a common failure mode (see [GitHub issue #5](https://github.com/BrassTack/claude-yank-patcher/issues/5))
 - Avoid committing the sandboxes themselves---`.gitignore` excludes them by default.
 
 Questions, bugs, or a new CLI shape? Update the replacements, rerun the installer, and capture the new patch state so the next upgrade is painless.

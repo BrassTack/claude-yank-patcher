@@ -5,13 +5,10 @@
       "Bash(git add:*)",
       "Bash(npm init:*)",
       "Bash(cp:*)",
-      "Bash(node find_keybindings.js)",
       "Bash(node:*)",
       "Bash(chmod:*)",
       "Bash(npm install:*)",
-      "Bash(./patch_claude.js)",
-      "Bash(./test_keybindings.js:*)",
-      "Bash(./fix_killring.js:*)"
+      "Bash(./patch-claude:*)"
     ],
     "deny": [],
     "ask": []

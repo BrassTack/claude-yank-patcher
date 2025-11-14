@@ -1,0 +1,48 @@
+{
+  "version": "2.0.41",
+  "recordedAt": "2025-11-14T15:03:00.000Z",
+  "sandbox": "sandboxes/2.0.41",
+  "replacementsSource": "2.0.41",
+  "replacements": "patches/2.0.41/replacements.json",
+  "patchState": {
+    "version": "2.0.41",
+    "replacementsSource": "2.0.41",
+    "replacements": [
+      {
+        "label": "killBufferRef insertion with offset tracking",
+        "search": "}) {\n    let L = E, N = H, $ = xI.fromText(A, V, L), {",
+        "replace": "}) {\n    let L = E, N = H, killBufferRef = hB.useRef(\"\"), lastKillEndOffsetRef = hB.useRef(-1), recordKill = (DA1, newOffset) => { if (!DA1 || DA1.length === 0) return; if ($.offset === lastKillEndOffsetRef.current) { if (newOffset < $.offset) { killBufferRef.current = DA1 + killBufferRef.current; } else { killBufferRef.current += DA1; } } else { killBufferRef.current = DA1; } lastKillEndOffsetRef.current = newOffset; }, $ = xI.fromText(A, V, L), {"
+      },
+      {
+        "label": "recordKill in reset helper",
+        "search": "    function b() {\n        if (A.trim() !== \"\") pk(A), J?.();\n        return xI.fromText(\"\", V, 0);\n    }",
+        "replace": "    function b() {\n        if (A.trim() !== \"\") pk(A), J?.();\n        lastKillEndOffsetRef.current = -1;\n        return xI.fromText(\"\", V, 0);\n    }"
+      },
+      {
+        "label": "Ctrl+K kill ring with append",
+        "search": "[ \"k\", () => $.deleteToLineEnd() ]",
+        "replace": "[ \"k\", () => {\n        let originalText = $.text, originalOffset = $.offset;\n        let W1 = $.deleteToLineEnd();\n        let deletedLength = originalText.length - W1.text.length;\n        let deletedText = originalText.slice(originalOffset, originalOffset + deletedLength);\n        recordKill(deletedText, W1.offset);\n        return W1;\n    } ]"
+      },
+      {
+        "label": "Ctrl+T transpose",
+        "search": "[ \"p\", () => c() ], [ \"u\",",
+        "replace": "[ \"p\", () => c() ], [ \"t\", () => {\n        let text = $.text, offset = $.offset;\n        if (offset === 0 || text.length < 2) return $;\n        if (offset >= text.length) {\n            if (text.length < 2) return $;\n            let before = text.slice(0, offset - 2);\n            let char1 = text[offset - 2];\n            let char2 = text[offset - 1];\n            let after = text.slice(offset);\n            return xI.fromText(before + char2 + char1 + after, V, offset);\n        }\n        let before = text.slice(0, offset - 1);\n        let char1 = text[offset - 1];\n        let char2 = text[offset];\n        let after = text.slice(offset + 1);\n        return xI.fromText(before + char2 + char1 + after, V, offset + 1);\n    } ], [ \"u\","
+      },
+      {
+        "label": "Ctrl+U kill ring with append",
+        "search": "[ \"u\", () => $.deleteToLineStart() ]",
+        "replace": "[ \"u\", () => {\n        let K1 = $.text, j1 = $.offset, W1 = $.deleteToLineStart();\n        recordKill(K1.slice(W1.offset, j1), W1.offset);\n        return W1;\n    } ]"
+      },
+      {
+        "label": "Ctrl+W kill ring + yank with append",
+        "search": "[ \"w\", () => $.deleteWordBefore() ] ]),",
+        "replace": "[ \"w\", () => {\n        let K1 = $.text, j1 = $.offset, W1 = $.prevWORD().modifyText($);\n        recordKill(K1.slice(W1.offset, j1), W1.offset);\n        return W1;\n    } ], [ \"y\", () => killBufferRef.current ? $.insert(killBufferRef.current) : $ ] ]),"
+      },
+      {
+        "label": "Meta+D kill ring with append",
+        "search": "[ \"d\", () => $.deleteWordAfter() ] ]);",
+        "replace": "[ \"d\", () => {\n        let K1 = $.text, j1 = $.offset, endPos = $.endOfWord().right(), W1 = $.modifyText(endPos), z1 = endPos.offset - j1;\n        if (z1 > 0) recordKill(K1.slice(j1, j1 + z1), W1.offset);\n        return W1;\n    } ] ]);"
+      }
+    ]
+  }
+}
